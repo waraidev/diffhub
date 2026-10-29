@@ -432,6 +432,8 @@ const buildSnapshot = async (repoPath, explicitBaseBranch, mode, serverBootId) =
   };
 };
 
+const WATCH_IGNORED_SEGMENTS = new Set([".next", ".turbo", "node_modules", ".venv", "venv"]);
+
 const shouldIgnoreWatchPath = (pathToCheck, repoPath) => {
   const normalizedRepoPath = repoPath.endsWith("/") ? repoPath : `${repoPath}/`;
   const relativePath = pathToCheck.startsWith(normalizedRepoPath)
@@ -442,8 +444,10 @@ const shouldIgnoreWatchPath = (pathToCheck, repoPath) => {
     return false;
   }
 
-  for (const ignoredRoot of [".next", ".turbo", "node_modules"]) {
-    if (relativePath === ignoredRoot || relativePath.startsWith(`${ignoredRoot}/`)) {
+  // Match at any depth so nested workspaces (web/node_modules) and Python
+  // virtualenvs don't make chokidar watch tens of thousands of files.
+  for (const segment of relativePath.split("/")) {
+    if (WATCH_IGNORED_SEGMENTS.has(segment)) {
       return true;
     }
   }

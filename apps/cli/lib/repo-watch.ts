@@ -5,7 +5,7 @@ import { getGitDirectory } from "./git-paths";
 import { invalidateGitCache } from "./git";
 
 const WATCH_DEBOUNCE_MS = 150;
-const IGNORED_ROOTS = [".next", ".turbo", "node_modules"] as const;
+const IGNORED_SEGMENTS = new Set([".next", ".turbo", "node_modules", ".venv", "venv"]);
 const GIT_WATCH_PATHS = ["HEAD", "index", "packed-refs", "refs"] as const;
 const DEFAULT_EXTERNAL_CHANGE: PendingChange = { event: "change", path: null };
 const noop = (): void => undefined;
@@ -79,10 +79,9 @@ export const shouldIgnoreWatchPath = (pathToCheck: string, repoPath: string): bo
     return false;
   }
 
-  for (const ignoredRoot of IGNORED_ROOTS) {
-    if (relativePath === ignoredRoot || relativePath.startsWith(`${ignoredRoot}/`)) {
-      return true;
-    }
+  // Any depth, so nested workspaces and virtualenvs aren't watched.
+  if (relativePath.split("/").some((segment) => IGNORED_SEGMENTS.has(segment))) {
+    return true;
   }
 
   if (
