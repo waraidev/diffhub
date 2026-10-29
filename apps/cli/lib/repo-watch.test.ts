@@ -124,6 +124,13 @@ describe("repo watcher", () => {
       shouldIgnoreWatchPath(join(repoPath, "node_modules/pkg/index.js"), repoPath),
     ).toBeTruthy();
     expect(
+      shouldIgnoreWatchPath(join(repoPath, "web/node_modules/pkg/index.js"), repoPath),
+    ).toBeTruthy();
+    expect(shouldIgnoreWatchPath(join(repoPath, "api/.venv/lib/a.py"), repoPath)).toBeTruthy();
+    expect(
+      shouldIgnoreWatchPath(join(repoPath, "src/node_modules_utils.ts"), repoPath),
+    ).toBeFalsy();
+    expect(
       shouldIgnoreWatchPath(join(repoPath, ".git/diffhub-comments.json"), repoPath),
     ).toBeTruthy();
 
